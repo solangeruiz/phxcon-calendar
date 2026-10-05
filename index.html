@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHXCON Content Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: header + countdown → about PHXCON → filters → Oct/Nov month grids → week-by-week detail cards */
+:root{
+  --bg:#fdf5fa; --surface:#ffffff; --fg:#2b1236; --muted:#77597f; --line:#f1dcec;
+  --pink:#d0246b; --pink-soft:#ffe2ef;
+  --purple:#6f3bd0; --purple-soft:#ede4ff;
+  --orchid:#a3359f; --orchid-soft:#fae1f7;
+  --plum:#4b2c5e; --plum-soft:#f1eaf4;
+  --event:#6f3bd0; --event-fg:#ffffff;
+  --hero-a:#ffd6ea; --hero-b:#e3d6ff;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#190e1f; --surface:#24162b; --fg:#f8e9f4; --muted:#c0a3c8; --line:#3b2645;
+  --pink:#ff6fa9; --pink-soft:#4a1932; --purple:#b495ff; --purple-soft:#2e1f50;
+  --orchid:#ee8ce8; --orchid-soft:#43193f; --plum:#dcc6e6; --plum-soft:#33243b;
+  --event:#b495ff; --event-fg:#190e1f; --hero-a:#3d1530; --hero-b:#271c48; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#190e1f; --surface:#24162b; --fg:#f8e9f4; --muted:#c0a3c8; --line:#3b2645;
+  --pink:#ff6fa9; --pink-soft:#4a1932; --purple:#b495ff; --purple-soft:#2e1f50;
+  --orchid:#ee8ce8; --orchid-soft:#43193f; --plum:#dcc6e6; --plum-soft:#33243b;
+  --event:#b495ff; --event-fg:#190e1f; --hero-a:#3d1530; --hero-b:#271c48; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1140px;margin:0 auto;padding:28px 16px 64px;display:grid;gap:28px}
+.hero{background:linear-gradient(120deg,var(--hero-a),var(--hero-b));border-radius:16px;padding:24px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:20px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--pink);font-weight:700}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(30px,5.5vw,50px);line-height:1;margin:6px 0 10px;text-wrap:balance}
+.sub{margin:0;max-width:62ch;color:var(--fg)}
+.count{font-family:var(--display)}
+.count b{display:block;font-size:56px;line-height:.95;font-variant-numeric:tabular-nums;color:var(--purple)}
+.count span{font-family:var(--body);font-size:13px;color:var(--muted)}
+.about{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px;align-items:start}
+.about h2,.sec h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0 0 8px}
+.facts{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.facts li{padding-left:16px;position:relative}
+.facts li::before{content:"";position:absolute;left:0;top:.6em;width:7px;height:7px;border-radius:50%;background:var(--pink)}
+.keyline{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:16px;display:grid;gap:10px}
+.keyline dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.keyline dd{margin:0 0 4px;font-weight:600}
+.keyline dl{margin:0}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.f{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:6px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.f i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.f[aria-pressed="false"]{opacity:.45}
+.f:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
+.btn{font:inherit;font-size:13px;font-weight:700;border:0;background:var(--purple);color:var(--event-fg);border-radius:999px;padding:8px 14px;cursor:pointer}
+.months{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,500px),1fr));gap:24px}
+.month h3{font-family:var(--display);font-weight:600;font-size:20px;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.dow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center;padding-bottom:4px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:7px;min-height:92px;padding:5px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.day.empty{background:transparent;border-color:transparent}
+.day.past{opacity:.5}
+.num{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600}
+.chip{display:block;font:inherit;text-align:left;border:0;cursor:pointer;font-size:11px;line-height:1.25;padding:3px 5px;border-radius:4px;font-weight:600;overflow-wrap:anywhere;width:100%}
+.k-phx{background:var(--pink-soft);color:var(--pink)}
+.k-bts{background:var(--orchid-soft);color:var(--orchid)}
+.k-count{background:var(--purple-soft);color:var(--purple)}
+.k-gen{background:var(--plum-soft);color:var(--plum)}
+.chip.k-email{background:transparent;color:var(--purple);border:1px dashed var(--purple)!important;font-weight:500}
+.day.event{background:var(--event);border-color:var(--event)}
+.day.event .num{color:var(--event-fg)}
+.day.event .chip{background:transparent;color:var(--event-fg);font-family:var(--display);font-size:14px;padding:0}
+.hide-phx .k-phx,.hide-bts .k-bts,.hide-count .k-count,.hide-gen .k-gen,.hide-email .k-email{display:none!important}
+.hide-phx .card.k-phx,.hide-bts .card.k-bts,.hide-count .card.k-count,.hide-gen .card.k-gen{display:none!important}
+.week h3{font-family:var(--display);font-weight:600;font-size:17px;margin:18px 0 8px;color:var(--muted)}
+.week-emails{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 10px}
+.week-emails span{font-size:12.5px;border:1px dashed var(--purple);color:var(--purple);border-radius:999px;padding:2px 10px}
+.cards{display:grid;gap:10px}
+.card{background:var(--surface)!important;color:var(--fg)!important;border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:auto 96px minmax(0,1fr);gap:4px 14px;scroll-margin-top:16px}
+.card.k-phx{--c:var(--pink)} .card.k-bts{--c:var(--orchid)} .card.k-count{--c:var(--purple)} .card.k-gen{--c:var(--plum)} .card.k-event{--c:var(--event)}
+.card.flash{box-shadow:0 0 0 3px var(--pink)}
+.card input{width:18px;height:18px;margin-top:3px;accent-color:var(--pink)}
+.card.done .ttl{text-decoration:line-through;color:var(--muted)}
+.date{font-weight:700;font-variant-numeric:tabular-nums}
+.date small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.main{min-width:0;display:grid;gap:6px}
+.ttl{font-weight:700;font-size:16px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:4px}
+.tag.plain{background:var(--plum-soft);color:var(--plum)}
+.row{font-size:14px}
+.row b{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;font-weight:700}
+.cap{font-style:italic}
+.mail{display:flex;flex-wrap:wrap;gap:6px}
+.mail span{font-size:12.5px;border:1px dashed var(--purple);color:var(--purple);border-radius:999px;padding:1px 9px}
+.meta{font-size:12.5px;color:var(--muted)}
+.meta strong{color:var(--fg);font-weight:600}
+.toast{font-size:13px;color:var(--purple);font-weight:600}
+@media (max-width:600px){
+  .day{min-height:54px;padding:3px}
+  .chip{font-size:0;padding:0;height:6px;border-radius:3px}
+  .k-phx.chip{background:var(--pink)} .k-bts.chip{background:var(--orchid)} .k-count.chip{background:var(--purple)} .k-gen.chip{background:var(--plum)}
+  .k-email.chip{height:4px;border-width:1px!important}
+  .day.event .chip{font-size:10px;height:auto}
+  .card{grid-template-columns:auto minmax(0,1fr)}
+  .card .date,.card .main{grid-column:2}
+}
+@media (prefers-reduced-motion:no-preference){.card{transition:box-shadow .3s}}
+</style>
+</head><body>
+
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">PHXCON 2026 · Saturday, Nov 14 · Rosen Centre</div>
+      <h1>Social + Email Calendar</h1>
+      <p class="sub">Every reel, post and story from now to conference day, lined up with the attendee, PHX list and Fellows emails. Each social piece lands the same day as its email or the day after, so people hear the same message twice.</p>
+    </div>
+    <div class="count"><b id="days">–</b><span>days until PHXCON</span></div>
+  </section>
+
+  <section class="about">
+    <div>
+      <h2>What PHXCON is</h2>
+      <p style="margin:0 0 10px;color:var(--muted)">Use these points in captions, voice-overs and on-screen text so every piece tells the same story.</p>
+      <ul class="facts" id="facts"></ul>
+    </div>
+    <div class="keyline">
+      <dl>
+        <dt>When</dt><dd id="when"></dd>
+        <dt>Where</dt><dd id="where"></dd>
+        <dt>Call to action for every post</dt><dd id="cta"></dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="tools">
+      <div class="filters" id="filters" role="group" aria-label="Show content types"></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="toast" id="toast" aria-live="polite"></span><button class="btn" id="copy">Copy as table for Excel / Sheets</button></div>
+    </div>
+  </section>
+
+  <section class="months" id="months"></section>
+
+  <section class="sec" id="detail">
+    <h2>Week by week</h2>
+    <p style="margin:0;color:var(--muted)">Check off each piece once it's live. "Prep by" is 3 days before posting: film, edit or design by then.</p>
+    <div id="weeks"></div>
+  </section>
+</div>
+
+<script>
+const DATA = {"about": {"name": "PHXCON 2026", "date": "Saturday, November 14, 2026", "venue": "Rosen Centre, Orlando", "points": ["A one-day conference for students across Central Florida: UCF, Valencia, Dr. Phillips and more.", "Breakout sessions you choose by interest, plus speakers on stage.", "A Community Fair with local companies offering internships and volunteer opportunities.", "Free transportation and free parking, so getting there is never the reason to miss it.", "Prizes and giveaways on the day of the conference.", "Everything runs through the Whova app: your agenda, sessions and the people you meet."], "cta": "Register, download Whova, and bring a friend."}, "social": [{"d": "2026-10-01", "kind": "gen", "fmt": "Carousel", "series": "Monthly events", "title": "October events + PHXCON preview", "film": "One slide per October event. Last slide is a PHXCON teaser with the date and venue.", "caption": "Here's everything happening in October. Save the date: PHXCON is Nov 14 at the Rosen Centre. Registration link in bio.", "owner": "", "email": []}, {"d": "2026-10-02", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "Registration activation: Fellows reel", "film": "Fellows tell the camera, in one line each, why they're going to PHXCON and who they're bringing.", "caption": "Our Fellows are in. Are you? Shout-out to the Valencia Fellows. Register at the link in bio.", "owner": "Fellows", "email": ["Fellows: ideas to promote the conference"]}, {"d": "2026-10-05", "kind": "gen", "fmt": "Reel", "series": "Hispanic Heritage Month", "title": "The Office as a Telenovela", "film": "People at the office acting out a dramatic telenovela scene about everyday office moments.", "caption": "Happy Hispanic Heritage Month from the office, telenovela edition.", "owner": "", "email": []}, {"d": "2026-10-06", "kind": "phx", "fmt": "Carousel", "series": "PHXCON", "title": "Thank you to our sponsors + Community Fair", "film": "Slide 1: 'PHXCON is possible because of them.' One slide per sponsor or donor with logo and one line on what they support. Last slide: the Community Fair, where students meet companies hiring interns and volunteers.", "caption": "Thank you to the sponsors and donors who make PHXCON free and possible. On Nov 14 you can meet many of them at the Community Fair. Tag them in each slide.", "owner": "", "email": ["Attendees: Community Fair and Donors/Sponsors (Oct 5)"]}, {"d": "2026-10-07", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "Networking with Central Florida universities", "film": "Quick cuts of students from different schools (UCF, Valencia and others) saying their school and what they hope to find at PHXCON. End with: 'One room, every campus in Central Florida.'", "caption": "PHXCON brings students from campuses across Central Florida into one room. Meet people outside your school, your major, your bubble. Tag a friend from another school.", "owner": "Solange", "email": ["PHX list: UCF + Dr. Phillips welcome and sign-up push (Oct 5)"]}, {"d": "2026-10-08", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "Testimonials from last year", "film": "Two or three past attendees answer one question on camera: 'What did you get out of PHXCON?' Look for a concrete result: an internship, a mentor, a new friend. Add captions on screen.", "caption": "Don't take our word for it. Here's what last year's attendees got out of PHXCON. Your turn on Nov 14.", "owner": "", "email": []}, {"d": "2026-10-09", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "What to wear to PHXCON", "film": "Three outfit looks: professional, creative and comfortable. Each person walks in, says the look's name and one tip (comfortable shoes, a layer for the AC). Moved from Oct 22 so it lands with the email.", "caption": "Not sure what to wear? Pick your vibe: professional, creative or comfortable. All three work at PHXCON. Which one are you?", "owner": "Solange, Bella, Florian", "email": ["Attendees: Transportation + Outfit Ideas (Oct 9)"]}, {"d": "2026-10-09", "kind": "bts", "fmt": "Stories", "series": "Behind the Camera", "title": "Behind the Camera #1: planning PHXCON", "film": "Short vertical clips of the team planning: whiteboard, meeting, a sneak peek at merch or signage. Raw and fast, no polish needed.", "caption": "A peek at how PHXCON gets made. Registration link in bio.", "owner": "Media team", "email": []}, {"d": "2026-10-12", "kind": "gen", "fmt": "TBD", "series": "Event", "title": "Interfaith Playhouse Build promo", "film": "Promo for the Interfaith Playhouse Build event.", "caption": "Details to confirm with Umi.", "owner": "Umi", "email": []}, {"d": "2026-10-13", "kind": "phx", "fmt": "Carousel", "series": "PHXCON", "title": "PHXCON gift card giveaway", "film": "Slide 1: the prize. Slide 2: how to enter (follow, like, tag two friends, register). Slide 3: rules and deadline. Slide 4: preview of day-of prizes at the conference.", "caption": "GIVEAWAY. Follow us, like this post, tag two friends and register for PHXCON to enter. Rules in the last slide. More prizes on Nov 14.", "owner": "Solange / team", "email": ["Attendees: Prizes and Giveaway, day of conference (Oct 13)"]}, {"d": "2026-10-14", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "What PHXCON has that other conferences don't", "film": "Fast list on screen with a clip for each: it's free, free transportation and parking, a Community Fair with real internships, breakout sessions you choose, students from every campus, prizes.", "caption": "Most conferences give you a lanyard and a long day. PHXCON gives you free rides, real internship leads and a room full of Central Florida students. Register at the link in bio.", "owner": "", "email": []}, {"d": "2026-10-15", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "Meet the speakers", "film": "Isabella introduces the speakers: photo, name and a one-line topic for each. If possible, a 5-second clip of each speaker saying 'In my session you'll learn\u2026'.", "caption": "Meet the people taking the stage at PHXCON. Who are you most excited to hear? Tell us below.", "owner": "Isabella", "email": []}, {"d": "2026-10-15", "kind": "count", "fmt": "Story", "series": "Countdown", "title": "30 days until PHXCON", "film": "Countdown graphic with a countdown sticker set for Nov 14.", "caption": "30 days. Tap the sticker to get a reminder.", "owner": "Solange / design", "email": []}, {"d": "2026-10-16", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "Which breakout session fits you?", "film": "'If you're into X, go to Y.' One quick match per session track, with on-screen text. Ends with: 'Full guide in your inbox.'", "caption": "Not sure which breakout to pick? Find your match here. The full breakout guide just landed in your inbox.", "owner": "Isabella", "email": ["Attendees: Breakout sessions guide (Oct 16)", "Fellows: find a partner org on your campus (Oct 16)"]}, {"d": "2026-10-17", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "How to use the Whova app", "film": "Screen recording with voice-over: download Whova, find PHXCON, build your agenda, star sessions, message other attendees.", "caption": "Your PHXCON lives in Whova. Download it now, build your schedule and start connecting before you walk in.", "owner": "", "email": ["Attendees: Transportation + Whova, new attendees (Oct 17)"]}, {"d": "2026-10-19", "kind": "bts", "fmt": "Reel", "series": "Behind the Camera", "title": "Behind the Camera #2: meet the team", "film": "Each organizer: name, role and 'the thing I'm most excited for at PHXCON'. Put faces to the event.", "caption": "The people behind PHXCON. Say hi on Nov 14.", "owner": "Media team", "email": []}, {"d": "2026-10-20", "kind": "count", "fmt": "Reel / Graphic", "series": "Countdown", "title": "25 days until PHXCON", "film": "Countdown graphic or reel. Optional donut activation on campus if vendor, budget and location are confirmed.", "caption": "25 days to go. Registered yet?", "owner": "Media team", "email": []}, {"d": "2026-10-22", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "Networking tips", "film": "Three tips: introduce yourself in 30 seconds (name, school, what you're looking for), bring a LinkedIn QR code or r\u00e9sum\u00e9, and follow up the same day on Whova.", "caption": "Networking doesn't have to be awkward. Save these three tips for Nov 14.", "owner": "", "email": []}, {"d": "2026-10-23", "kind": "phx", "fmt": "Story", "series": "PHXCON", "title": "Don't go alone: tag your PHXCON buddy", "film": "Story with a 'Tag who you're going with' prompt and an Add Yours sticker.", "caption": "Who's your PHXCON buddy? Tag them.", "owner": "", "email": ["Attendees: Don't go alone (Oct 23)", "Fellows: updated leaderboard 2 (Oct 23)"]}, {"d": "2026-10-24", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "Free transportation and free parking", "film": "Show how to get there: pickup points and times for the free transportation, where to park for free, and the walk from the parking to the entrance at the Rosen Centre.", "caption": "Getting to PHXCON is free. Free rides, free parking. Details in your inbox and on Whova.", "owner": "", "email": ["Attendees: Transportation + Whova, new attendees (Oct 24)"]}, {"d": "2026-10-25", "kind": "count", "fmt": "Story / Graphic", "series": "Countdown", "title": "20 days until PHXCON", "film": "Weekend countdown story. Schedule it in advance.", "caption": "20 days.", "owner": "Solange", "email": []}, {"d": "2026-10-27", "kind": "phx", "fmt": "Reel / Carousel", "series": "PHXCON", "title": "Speaker or session spotlight", "film": "Deep dive on one newly confirmed speaker or session: who they are, what you'll learn, when it happens.", "caption": "Spotlight: [speaker or session]. Add it to your Whova agenda.", "owner": "", "email": []}, {"d": "2026-10-29", "kind": "phx", "fmt": "Carousel", "series": "PHXCON", "title": "Prep list: what to bring (design)", "film": "Saveable checklist: Whova downloaded, charger, water bottle, r\u00e9sum\u00e9 or LinkedIn QR, comfortable shoes, a light jacket, your ride or parking plan. Only use confirmed logistics.", "caption": "Save this for Nov 14. Your PHXCON prep list.", "owner": "Solange / event team", "email": []}, {"d": "2026-10-30", "kind": "count", "fmt": "Reel / Graphic", "series": "Countdown", "title": "15 days until PHXCON", "film": "Two-week final push. Quick recap: free, free rides, Community Fair, prizes.", "caption": "Two weeks. Register, download Whova, bring a friend.", "owner": "Solange / Isabella", "email": ["Attendees: Transportation + Whova, new attendees (Oct 30)"]}, {"d": "2026-11-02", "kind": "gen", "fmt": "Carousel", "series": "Monthly events", "title": "November events + PHXCON", "film": "One slide per November event. PHXCON goes first since it's 12 days away.", "caption": "Here's everything happening in November, starting with PHXCON on Nov 14.", "owner": "", "email": []}, {"d": "2026-11-03", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "The agenda in 30 seconds", "film": "Fast walk through the day, from check-in to closing: keynote, breakouts, lunch, Community Fair, prizes. Timestamps on screen.", "caption": "Your whole PHXCON day in 30 seconds. Full agenda on Whova.", "owner": "", "email": []}, {"d": "2026-11-04", "kind": "bts", "fmt": "Reel", "series": "Behind the Camera", "title": "Behind the Camera #3: packing the kits (10 days)", "film": "Team packing attendee kits and printing badges, with a '10 days' graphic at the end.", "caption": "10 days out and the kits are getting packed.", "owner": "Media team", "email": []}, {"d": "2026-11-05", "kind": "phx", "fmt": "Carousel", "series": "PHXCON", "title": "Community Fair: meet the companies", "film": "One slide per company at the Community Fair, with what they offer: internships, volunteer roles, jobs.", "caption": "Bring your r\u00e9sum\u00e9. These companies will be at the PHXCON Community Fair looking for interns and volunteers.", "owner": "", "email": []}, {"d": "2026-11-06", "kind": "phx", "fmt": "Carousel", "series": "PHXCON", "title": "Final speaker lineup", "film": "Every speaker in one carousel, with session times.", "caption": "The full PHXCON lineup. Which session is first on your list?", "owner": "Isabella", "email": []}, {"d": "2026-11-07", "kind": "count", "fmt": "Story", "series": "Countdown", "title": "One week: rides + Whova reminder", "film": "'One week' story with a link to transportation details and a reminder to download Whova.", "caption": "One week. Your ride is free and your agenda is on Whova.", "owner": "", "email": ["Attendees: Transportation + Whova, new attendees (Nov 7)"]}, {"d": "2026-11-10", "kind": "bts", "fmt": "Stories", "series": "Behind the Camera", "title": "Behind the Camera #4: final prep", "film": "Final meetings, signage, last walkthrough. A venue peek at the Rosen Centre if the team has access.", "caption": "Almost there.", "owner": "Media team", "email": []}, {"d": "2026-11-11", "kind": "phx", "fmt": "Reel", "series": "PHXCON", "title": "Prep list: what to bring (video)", "film": "Someone packs their bag on camera following the prep list, item by item.", "caption": "Packing for PHXCON like a pro. Save this.", "owner": "", "email": []}, {"d": "2026-11-12", "kind": "count", "fmt": "Story", "series": "Countdown", "title": "2 days: build your Whova schedule", "film": "Story reminding people to star their sessions in Whova.", "caption": "2 days. Star your sessions in Whova now.", "owner": "", "email": []}, {"d": "2026-11-13", "kind": "phx", "fmt": "Carousel", "series": "PHXCON", "title": "Know before you go", "film": "Check-in time, address (Rosen Centre), rides and parking, what to bring, Whova, what to expect first.", "caption": "Tomorrow. Here's everything you need to know before you go. See you at the Rosen Centre.", "owner": "Solange", "email": ["Attendees: Know before you go (Nov 13)"]}, {"d": "2026-11-14", "kind": "event", "fmt": "Live stories", "series": "PHXCON", "title": "PHXCON 2026 at the Rosen Centre", "film": "Live stories all day: check-in, keynote, breakouts, Community Fair, prizes. Grab extra clips for the recap and next year's promo.", "caption": "We're live from PHXCON 2026.", "owner": "Everyone", "email": []}], "emails": [{"d": "2026-10-02", "list": "Fellows", "title": "Ideas to promote the conference"}, {"d": "2026-10-05", "list": "Attendees", "title": "Community Fair and Donors/Sponsors"}, {"d": "2026-10-05", "list": "PHX list", "title": "UCF + Dr. Phillips welcome email and sign-up push"}, {"d": "2026-10-09", "list": "Attendees", "title": "Transportation + Outfit Ideas"}, {"d": "2026-10-09", "list": "Fellows", "title": "General updated leaderboard"}, {"d": "2026-10-13", "list": "Attendees", "title": "Prizes and Giveaway, day of conference"}, {"d": "2026-10-16", "list": "Attendees", "title": "Breakout sessions guide"}, {"d": "2026-10-16", "list": "Fellows", "title": "Find a partner org on your campus"}, {"d": "2026-10-17", "list": "Attendees", "title": "Transportation + Whova (new attendees)"}, {"d": "2026-10-23", "list": "Attendees", "title": "Don't go alone"}, {"d": "2026-10-23", "list": "Fellows", "title": "General updated leaderboard 2"}, {"d": "2026-10-24", "list": "Attendees", "title": "Transportation + Whova (new attendees)"}, {"d": "2026-10-30", "list": "Attendees", "title": "Transportation + Whova (new attendees)"}, {"d": "2026-11-07", "list": "Attendees", "title": "Transportation + Whova (new attendees)"}, {"d": "2026-11-13", "list": "Attendees", "title": "Know before you go"}]};
+const KINDS = {phx:"PHXCON", bts:"Behind the Camera", count:"Countdown", gen:"Non-conference", email:"Emails"};
+const COLORS = {phx:"var(--pink)", bts:"var(--orchid)", count:"var(--purple)", gen:"var(--plum)", email:"transparent"};
+const EVENT = "2026-11-14";
+const parse = s => new Date(s+"T00:00:00Z");
+const iso = d => d.toISOString().slice(0,10);
+const fmtS = new Intl.DateTimeFormat("en-US",{weekday:"short",month:"short",day:"numeric",timeZone:"UTC"});
+const fmtD = new Intl.DateTimeFormat("en-US",{weekday:"short",timeZone:"UTC"});
+const fmtMD = new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
+const n = new Date(); const today = iso(new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())));
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+document.getElementById("days").textContent = Math.max(0,Math.round((parse(EVENT)-parse(today))/864e5));
+document.getElementById("facts").innerHTML = DATA.about.points.map(p=>`<li>${esc(p)}</li>`).join("");
+document.getElementById("when").textContent = DATA.about.date;
+document.getElementById("where").textContent = DATA.about.venue;
+document.getElementById("cta").textContent = DATA.about.cta;
+
+const social = DATA.social.map((s,i)=>({...s,id:"p"+i}));
+const byDate = {};
+social.forEach(s=>(byDate[s.d] ||= {s:[],e:[]}).s.push(s));
+DATA.emails.forEach(e=>(byDate[e.d] ||= {s:[],e:[]}).e.push(e));
+
+// filters
+const fEl = document.getElementById("filters");
+Object.entries(KINDS).forEach(([k,label])=>{
+  const b = document.createElement("button");
+  b.className="f"; b.id="f-"+k; b.setAttribute("aria-pressed","true");
+  b.innerHTML = `<i style="background:${COLORS[k]};${k==="email"?"border:1px dashed var(--purple)":""}"></i>${label}`;
+  b.onclick = ()=>{ const on = b.getAttribute("aria-pressed")==="true"; b.setAttribute("aria-pressed", String(!on)); document.body.classList.toggle("hide-"+k, on); };
+  fEl.appendChild(b);
+});
+
+// calendar
+const mEl = document.getElementById("months");
+[[2026,9,"October"],[2026,10,"November"]].forEach(([y,m,name])=>{
+  let h = `<div class="month"><h3>${name} 2026</h3><div class="grid">`;
+  ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(d=>h+=`<div class="dow">${d}</div>`);
+  const first = new Date(Date.UTC(y,m,1)).getUTCDay(), len = new Date(Date.UTC(y,m+1,0)).getUTCDate();
+  for(let i=0;i<first;i++) h+=`<div class="day empty"></div>`;
+  for(let d=1; d<=len; d++){
+    const key = iso(new Date(Date.UTC(y,m,d))), x = byDate[key]||{s:[],e:[]};
+    if(key===EVENT){ h+=`<div class="day event"><span class="num">${d}</span><button class="chip" data-go="${x.s[0].id}">PHXCON 2026</button></div>`; continue; }
+    const chips = x.s.map(s=>`<button class="chip k-${s.kind}" data-go="${s.id}" title="${esc(s.title)}">${esc(s.title)}</button>`).join("")
+      + x.e.map(e=>`<button class="chip k-email" title="Email to ${esc(e.list)}: ${esc(e.title)}" data-go="w-${key}">✉ Email · ${esc(e.list)}</button>`).join("");
+    h+=`<div class="day ${key<today?"past":""}"><span class="num">${d}</span>${chips}</div>`;
+  }
+  mEl.insertAdjacentHTML("beforeend", h+"</div></div>");
+});
+mEl.addEventListener("click",ev=>{
+  const t = ev.target.closest("[data-go]"); if(!t) return;
+  let el = document.getElementById(t.dataset.go);
+  if(!el && t.dataset.go.startsWith("w-")) el = document.querySelector(`[data-days~="${t.dataset.go.slice(2)}"]`);
+  if(!el) return;
+  el.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth", block:"center"});
+  el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),1600);
+});
+
+// weeks
+let done={}; try{done=JSON.parse(localStorage.getItem("phxcon-done-v2")||"{}")}catch(e){}
+const weekStart = s => { const d=parse(s); d.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7)); return iso(d); };
+const weeks = {};
+social.forEach(s=>(weeks[weekStart(s.d)] ||= {s:[],e:[]}).s.push(s));
+DATA.emails.forEach(e=>(weeks[weekStart(e.d)] ||= {s:[],e:[]}).e.push(e));
+const wEl = document.getElementById("weeks");
+Object.keys(weeks).sort().forEach(w=>{
+  const x = weeks[w], end = new Date(parse(w).getTime()+6*864e5);
+  const days = [...new Set([...x.s.map(s=>s.d),...x.e.map(e=>e.d)])].join(" ");
+  let h = `<div class="week" data-days="${days}"><h3>Week of ${fmtMD.format(parse(w))} – ${fmtMD.format(end)}</h3>`;
+  if(x.e.length) h += `<div class="week-emails k-email">${x.e.map(e=>`<span>✉ ${fmtMD.format(parse(e.d))} · ${esc(e.list)}: ${esc(e.title)}</span>`).join("")}</div>`;
+  h += `<div class="cards">`;
+  x.s.forEach(s=>{
+    const prep = fmtS.format(new Date(parse(s.d).getTime()-3*864e5));
+    const tagK = s.kind==="event"?"k-count":"k-"+s.kind;
+    h += `<article class="card k-${s.kind} ${done[s.id]?"done":""}" id="${s.id}">
+      <input type="checkbox" id="cb-${s.id}" ${done[s.id]?"checked":""} aria-label="Posted: ${esc(s.title)}">
+      <div class="date">${fmtMD.format(parse(s.d))}<small>${fmtD.format(parse(s.d))}</small></div>
+      <div class="main">
+        <label class="ttl" for="cb-${s.id}">${esc(s.title)}</label>
+        <div class="tags"><span class="tag ${tagK}">${esc(s.series)}</span><span class="tag plain">${esc(s.fmt)}</span></div>
+        <div class="row"><b>What to film or design</b>${esc(s.film)}</div>
+        <div class="row"><b>Caption idea</b><span class="cap">${esc(s.caption)}</span></div>
+        ${s.email.length?`<div class="row"><b>Ties to email</b><div class="mail">${s.email.map(m=>`<span>✉ ${esc(m)}</span>`).join("")}</div></div>`:""}
+        <div class="meta">${s.owner?`Owner: <strong>${esc(s.owner)}</strong> · `:""}${s.kind==="event"?"":`Prep by <strong>${prep}</strong>`}</div>
+      </div></article>`;
+  });
+  wEl.insertAdjacentHTML("beforeend", h+"</div></div>");
+});
+wEl.addEventListener("change",ev=>{
+  const cb=ev.target; if(cb.type!=="checkbox") return;
+  const card=cb.closest(".card"); card.classList.toggle("done",cb.checked); done[card.id]=cb.checked;
+  try{localStorage.setItem("phxcon-done-v2",JSON.stringify(done))}catch(e){}
+});
+
+// copy as TSV
+document.getElementById("copy").onclick = async ()=>{
+  const clean = v => String(v).replace(/[\t\n]/g," ");
+  const rows = [["Date","Day","Type","Series","Format","Title","What to film or design","Caption idea","Ties to email","Owner","Prep by","Posted"]];
+  social.forEach(s=>rows.push([s.d,fmtD.format(parse(s.d)),KINDS[s.kind]||"Conference day",s.series,s.fmt,s.title,s.film,s.caption,s.email.join("; "),s.owner,iso(new Date(parse(s.d).getTime()-3*864e5)),done[s.id]?"Yes":""]));
+  DATA.emails.forEach(e=>rows.push([e.d,fmtD.format(parse(e.d)),"Email",e.list,"Email",e.title,"","","","","",""]));
+  const head=rows.shift(); rows.sort((a,b)=>a[0].localeCompare(b[0]));
+  const tsv=[head,...rows].map(r=>r.map(clean).join("\t")).join("\n");
+  const t=document.getElementById("toast");
+  try{ await navigator.clipboard.writeText(tsv); t.textContent="Copied. Paste into cell A1."; }
+  catch(e){ t.textContent="Copy was blocked here. Use the Excel file instead."; }
+  setTimeout(()=>t.textContent="",4000);
+};
+</script>
+</body></html>
