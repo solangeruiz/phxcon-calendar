@@ -36,6 +36,8 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(30px,5.5vw,50px);l
 .count{font-family:var(--display)}
 .count b{display:block;font-size:56px;line-height:.95;font-variant-numeric:tabular-nums;color:var(--purple)}
 .count span{font-family:var(--body);font-size:13px;color:var(--muted)}
+.approval{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;border:1px dashed var(--pink);border-radius:12px;padding:14px 18px;background:var(--surface)}
+a.btn{text-decoration:none;display:inline-block}
 .about{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px;align-items:start}
 .about h2,.sec h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0 0 8px}
 .facts{display:grid;gap:6px;margin:0;padding:0;list-style:none}
@@ -116,6 +118,14 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(30px,5.5vw,50px);l
       <p class="sub">Every reel, post and story from now to conference day, lined up with the attendee, PHX list and Fellows emails. Each social piece lands the same day as its email or the day after, so people hear the same message twice.</p>
     </div>
     <div class="count"><b id="days">–</b><span>days until PHXCON</span></div>
+  </section>
+
+  <section class="approval">
+    <div>
+      <div class="eyebrow">Approval ideas</div>
+      <p style="margin:2px 0 0">Have a new reel or post idea? Share it in Slack for approval before it goes on the calendar.</p>
+    </div>
+    <a class="btn" href="https://app.slack.com/client/T08TUCJJ389" target="_blank" rel="noopener">Share an idea in Slack</a>
   </section>
 
   <section class="about">
